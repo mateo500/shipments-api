@@ -29,4 +29,14 @@ export class ShipmentInMemoryRepository implements ShipmentRepository {
   public async getAll(): Promise<Shipment[]> {
     return this.data;
   }
+
+  public async update(shipmentId: string, data: Shipment): Promise<Shipment> {
+    const shipmentIndex = this.data.findIndex(
+      (ship) => ship.referenceId === shipmentId
+    );
+
+    this.data[shipmentIndex] = data;
+
+    return this.data[shipmentIndex];
+  }
 }

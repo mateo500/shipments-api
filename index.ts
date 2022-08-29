@@ -30,7 +30,39 @@ app.post("/shipment", async (req: Request, res: Response) => {
 });
 
 app.post("/organization", async (req: Request, res: Response) => {
-  await organizationService.create(req.body.id, req.body.code);
+  const existingOrg = await organizationService.getOrganizationById(
+    req.body.id
+  );
+
+  //in case that the org already exist, we update the org name on the shipments that contain it.
+  if (existingOrg) {
+    const newOrgCreated = await organizationService.create(
+      req.body.id,
+      req.body.code
+    );
+
+    const shipments = await shipmentService.getAllShipments();
+
+    const shipmentsToUpdateOrgName = shipments.filter((shipment) => {
+      return shipment.organizations.includes(existingOrg.code);
+    });
+
+    for (const shipment of shipmentsToUpdateOrgName) {
+      const newShipment = {
+        ...shipment,
+        organizations: shipment.organizations.map((orgName) =>
+          orgName.replace(existingOrg.code, newOrgCreated.code)
+        ),
+      };
+
+      await shipmentService.updateShipment(
+        newShipment.referenceId,
+        newShipment
+      );
+    }
+  } else {
+    await organizationService.create(req.body.id, req.body.code);
+  }
 
   res.sendStatus(201);
 });

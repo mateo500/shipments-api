@@ -31,4 +31,8 @@ export class ShipmentService {
   async getAllShipments(): Promise<Shipment[]> {
     return this.shipmentRepository.getAll();
   }
+
+  async updateShipment(shipmentId: string, data: Shipment) {
+    return this.shipmentRepository.update(shipmentId, data);
+  }
 }
